@@ -21,6 +21,10 @@
   #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
 #endif
 
+#define LED_RED 0
+#define LED_ORA 1
+#define LED_GRE 2
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -32,15 +36,8 @@ GPIO_Handle_t GpioLed_red;
 GPIO_Handle_t GpioLed_green;
 GPIO_Handle_t GpioLed_orange;
 
-void delay(void) {
-	for(volatile uint32_t i = 0; i < 500000; i++);
-}
-
-void delay_ms(int ms) {
-	int multiplicator = 16000;
-	int res = ms * multiplicator;
-	for(volatile uint32_t c = 0; c < res; c++);
-
+void delay(int s) {
+	for(volatile uint32_t i = 0; i < s * 1000000; i++);
 }
 
 void toggleLED(){
@@ -49,17 +46,32 @@ void toggleLED(){
 	GPIO_ToggleOutputPin(&GpioLed_orange);
 }
 
+void toggleLED_(int led){
+	switch (led){
+	case 0:
+		GPIO_ToggleOutputPin(&GpioLed_red);
+		break;
+	case 1:
+		GPIO_ToggleOutputPin(&GpioLed_orange);
+		break;
+	case 2:
+		GPIO_ToggleOutputPin(&GpioLed_green);
+		break;
+	}
+
+}
+
 void initLedPins(){
 	GpioLed_red.pGPIOx = GPIOD;
-	GpioLed_red.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_14;
+	GpioLed_red.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_9;
 	GpioLed_red.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_OUT;
 
 	GpioLed_green.pGPIOx = GPIOD;
-	GpioLed_green.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_12;
+	GpioLed_green.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_11;
 	GpioLed_green.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_OUT;
 
 	GpioLed_orange.pGPIOx = GPIOD;
-	GpioLed_orange.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_13;
+	GpioLed_orange.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_10;
 	GpioLed_orange.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_OUT;
 
 	GPIO_Init(&GpioLed_red);
@@ -72,12 +84,25 @@ void initLedPins(){
 
 }
 
+void traffic_light(){
+	toggleLED_(LED_RED);
+	delay(5);
+	toggleLED_(LED_ORA);
+	delay(5);
+	toggleLED();
+	delay(5);
+	toggleLED_(LED_GRE);
+	toggleLED_(LED_ORA);
+	delay(5);
+	toggleLED_(LED_ORA);
+
+}
+
 int main(void)
 {
 	initLedPins();
 
 	while(1){
-		toggleLED();
-		delay_ms(300);
+		traffic_light();
 	}
 }
