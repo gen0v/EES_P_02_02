@@ -1,6 +1,9 @@
 /*
  * stm32f407xx.h
- * Vorlage fürs Praktikum 
+ * Vorlage fürs Praktikum
+ * Name 1: 			Eugen Burikov
+ * Name 2:			Dennis Zubiks
+ * Gruppennummer: 	15
  */
 
 #ifndef STM32F407XX_H_
@@ -23,7 +26,9 @@
 
 #define PERIPH_BASEADDR 						0x40000000U
 #define APB1PERIPH_BASEADDR						PERIPH_BASEADDR
+
 #define APB2PERIPH_BASEADDR						0x40010000U
+
 #define AHB1PERIPH_BASEADDR						0x40020000U
 #define AHB2PERIPH_BASEADDR						0x50000000U
 
@@ -91,10 +96,12 @@ typedef struct
 	uint32_t RESERVED1;				 /* Address offset: 0x28 */
 	uint32_t RESERVED2;				 /* Address offset: 0x2C */
 	volatile uint32_t AHB1ENR;       /* Address offset: 0x30 */
-
 	volatile uint32_t AHB2ENR;       /* Address offset: 0x34 */
-	volatile uint32_t AHB3ENR;       /* Address offset: 0x38 */
-	uint32_t RESERVED3;				 /* Address offset: 0x3C */
+	volatile uint16_t AHB3ENR;       /* Address offset: 0x38 */
+	uint32_t RESERVER3;				 /* Address offset: 0x3C */
+	volatile uint32_t APB1ENR;       /* Address offset: 0x40 */
+	volatile uint32_t APB2ENR;       /* Address offset: 0x44 */
+	uint32_t RESERVED4;				 /* Address offset: 0x3C */
 
 
 
@@ -176,19 +183,26 @@ typedef struct
 #define NVIC_ICER2  		0xE000E188U
 #define NVIC_ICER3			0xE000E18CU
 
-
 /*
  * IRQ(Interrupt Request) Nummern für STM32F407x MCU
  * TODO: Ausfüllen der IRQ--Nummern für EXTI
  */
 
-#define IRQ_NO_EXTI0			0x00000058
-#define IRQ_NO_EXTI1 			0x0000005C
-#define IRQ_NO_EXTI2 			0x00000060
-#define IRQ_NO_EXTI3 			0x00000064
-#define IRQ_NO_EXTI4 			0x00000068
-#define IRQ_NO_EXTI9_5 			0x0000009C
-#define IRQ_NO_EXTI15_10 		0x000000E0
+//#define IRQ_NO_EXTI0			0x00000058
+//#define IRQ_NO_EXTI1 			0x0000005C
+//#define IRQ_NO_EXTI2 			0x00000060
+//#define IRQ_NO_EXTI3 			0x00000064
+//#define IRQ_NO_EXTI4 			0x00000068
+//#define IRQ_NO_EXTI9_5 			0x0000009C
+//#define IRQ_NO_EXTI15_10 		0x000000E0
+
+#define IRQ_NO_EXTI0			6
+#define IRQ_NO_EXTI1 			7
+#define IRQ_NO_EXTI2 			8
+#define IRQ_NO_EXTI3 			9
+#define IRQ_NO_EXTI4 			10
+#define IRQ_NO_EXTI9_5 			23
+#define IRQ_NO_EXTI15_10 		40
 
 /*
  * EXTI Adressen und Makros
@@ -204,8 +218,8 @@ typedef struct
  * Clock Enable und Disable Makros für SYSCFG
  * DONE: Vervollständigen Sie die Makros zum anschalten und Abschalten der Syscfg Clock
  */
-#define SYSCFG_PCLK_EN()	do{RCC->APB2PERIPH_BASEADDR |= (1<<14)}while(0)
-#define SYSCFG_PCLK_DI()	do{RCC->APB2PERIPH_BASEADDR &= ~(1<<14)}while(0)
+#define SYSCFG_PCLK_EN()	do{RCC->APB2ENR |= (1<<14) ;}while(0)
+#define SYSCFG_PCLK_DI()	do{RCC->APB2ENR &= ~(1<<14) ;}while(0)
 
 /*
  * Register struct EXTI

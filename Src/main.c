@@ -15,6 +15,10 @@
  *                        opensource.org/licenses/BSD-3-Clause
  *
  ******************************************************************************
+ *
+ * Name 1: 			Eugen Burikov
+ * Name 2:			Dennis Zubiks
+ * Gruppennummer: 	15
  */
 
 #if !defined(__SOFT_FP__) && defined(__ARM_FP)
@@ -35,6 +39,7 @@
 GPIO_Handle_t GpioLed_red;
 GPIO_Handle_t GpioLed_green;
 GPIO_Handle_t GpioLed_orange;
+GPIO_Handle_t GpioBtn;
 
 void delay(int s) {
 	for(volatile uint32_t i = 0; i < s * 1000000; i++);
@@ -62,6 +67,11 @@ void toggleLED_(int led){
 }
 
 void initLedPins(){
+
+	memset( &GpioLed_red,0,sizeof(GpioLed_red));
+	memset( &GpioLed_green,0,sizeof(GpioLed_green));
+	memset( &GpioLed_orange,0,sizeof(GpioLed_orange));
+
 	GpioLed_red.pGPIOx = GPIOD;
 	GpioLed_red.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_9;
 	GpioLed_red.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_OUT;
@@ -100,9 +110,33 @@ void traffic_light(){
 
 int main(void)
 {
+	//Enable Clock
+	GPIO_PeriClockControl(GPIOD, ENABLE);
+	SYSCFG_PCLK_EN();
+
 	initLedPins();
+
+	memset(&GpioBtn,0,sizeof(GpioBtn));
+
+	GpioBtn.pGPIOx = GPIOD;
+	GpioBtn.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_5;
+	GpioBtn.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_IT_FT;
+	GpioBtn.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_PIN_PU;
+
+
+	GPIO_Init(&GpioBtn);
+
+	//IRQ config
+	GPIO_IRQInterruptConfig(IRQ_NO_EXTI9_5, ENABLE);
+
 
 	while(1){
 		traffic_light();
 	}
+}
+
+void EXTI9_5_IRQHandler(void){
+	delay(5);
+	GPIO_IRQHandling(GPIO_PIN_NO_5);
+	toggleLED();
 }

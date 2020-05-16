@@ -1,7 +1,9 @@
 /*
  * stm32f407xx_gpio_driver.h
  * Vorlage fürs Praktikum 
- *  
+ * Name 1: 			Eugen Burikov
+ * Name 2:			Dennis Zubiks
+ * Gruppennummer: 	15
  */
 
 #ifndef STM32F407XX_GPIO_DRIVER_H_

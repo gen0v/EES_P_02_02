@@ -1,6 +1,9 @@
 /*
  * stm32f407xx_gpio_driver.c
- * Vorlage fürs Praktikum 
+ * Vorlage fürs Praktikum
+ * Name 1: 			Eugen Burikov
+ * Name 2:			Dennis Zubiks
+ * Gruppennummer: 	15
  */
 
 
@@ -106,10 +109,19 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 	 }else{ // Interrupt Modus kommt im zweiten Teil
 	    // IRQ-Modus
 		// 1. Konfiguration für Trigger auf fallenende, steigende oder beide Flanken
-		
+		if(pGPIOHandle->GPIO_PinConfig.GPIO_PinMode == GPIO_MODE_IT_FT){
+			//Falling Trigger
+			EXTI->FTSR |= (1<<pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
+		}else{
+			//Rising Trigger
+			EXTI->RTSR |= (1<<pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
+		}
 
 		//2. Konfiguration des entsprechenden GPIO-Ports in SYSCFG_EXTICR
+		SYSCFG->EXTICR[pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber / 4 + 1] = pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber % 4;
+
 		//3  Aktivieren des EXTI Interrupts handling in IMR-Register
+		EXTI->IMR |= (1<<pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
 		 
 	 }
 
@@ -202,10 +214,31 @@ void GPIO_IRQInterruptConfig(uint8_t IRQNumber, uint8_t EnorDi)
 	// Nicht alle Interrupts sind im Mikrocontroller aktiv. Überprüfen sie dazu das Handbuch (Reference Manual) des Mikrocontrollers.
 	if(EnorDi == ENABLE)
 	{
-		//ToDo: Programmieren der entsprechenden ISERx register
+		if(IRQNumber <= 31)
+		{
+			*(volatile uint32_t*)NVIC_ISER0 |= ( 1 << (IRQNumber % 32) );
+
+		}else if(IRQNumber > 31 && IRQNumber < 64 ) //32 to 63
+		{
+			*(volatile uint32_t*)NVIC_ISER1 |= ( 1 << (IRQNumber % 32) );
+		}
+		else if(IRQNumber >= 64 && IRQNumber < 96 )
+		{
+			*(volatile uint32_t*)NVIC_ISER2 |= ( 1 << (IRQNumber % 64) );
+		}
 	}else
 	{
-		//ToDo: Programmieren der entsprechenden ICERx register
+		if(IRQNumber <= 31)
+		{
+			*(volatile uint32_t*)NVIC_ICER0 |= ( 1 << IRQNumber % 32 );
+		}else if(IRQNumber > 31 && IRQNumber < 64 )
+		{
+			*(volatile uint32_t*)NVIC_ICER1 |= ( 1 << (IRQNumber % 32) );
+		}
+		else if(IRQNumber >= 64 && IRQNumber < 96 )
+		{
+			*(volatile uint32_t*)NVIC_ICER2 |= ( 1 << (IRQNumber % 64) );
+		}
 	}
 
 }
