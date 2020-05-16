@@ -88,6 +88,30 @@ void GPIO_Pin_RESET(GPIO_Handle_t *pGPIOHandle)
 
 }
 
+uint8_t GPIO_to_interrupt_code(int32_t reg)
+{
+	switch (reg){
+		case GPIOA_BASEADDR:
+			return 0b0000;
+		case GPIOB_BASEADDR:
+			return 0b0001;
+		case GPIOC_BASEADDR:
+			return 0b0010;
+		case GPIOD_BASEADDR:
+			return 0b0011;
+		case GPIOE_BASEADDR:
+			return 0b0100;
+		case GPIOF_BASEADDR:
+			return 0b0101;
+		case GPIOG_BASEADDR:
+			return 0b0110;
+		case GPIOH_BASEADDR:
+			return 0b0111;
+		case GPIOI_BASEADDR:
+			return 0b1000;
+	}
+}
+
 // Implementieren Sie die weiteren Schritte. Denken Sie daran die Einträge eines Registers zurückzusetzen, bevor Sie einzelne Bits setzen
 void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 {
@@ -112,16 +136,20 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 		if(pGPIOHandle->GPIO_PinConfig.GPIO_PinMode == GPIO_MODE_IT_FT){
 			//Falling Trigger
 			EXTI->FTSR |= (1<<pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
+			//EXTI->FTSR &= ~(1<<pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
 		}else{
 			//Rising Trigger
 			EXTI->RTSR |= (1<<pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
 		}
 
 		//2. Konfiguration des entsprechenden GPIO-Ports in SYSCFG_EXTICR
-		SYSCFG->EXTICR[pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber / 4 + 1] = pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber % 4;
+//		SYSCFG->EXTICR[pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber / 4 + 1] = pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber % 4;
+		SYSCFG->EXTICR[pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber / 4] |= GPIO_to_interrupt_code((uint32_t)(pGPIOHandle->pGPIOx))<<((pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber % 4) * 4);
+
 
 		//3  Aktivieren des EXTI Interrupts handling in IMR-Register
 		EXTI->IMR |= (1<<pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
+
 		 
 	 }
 
