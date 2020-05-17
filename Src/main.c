@@ -40,18 +40,19 @@ GPIO_Handle_t GpioLed_red;
 GPIO_Handle_t GpioLed_green;
 GPIO_Handle_t GpioLed_orange;
 GPIO_Handle_t GpioBtn;
+uint16_t state;
 
 void delay(int s) {
 	for(volatile uint32_t i = 0; i < s * 1000000; i++);
 }
 
-void toggleLED(){
+void toggleLEDs(){
 	GPIO_ToggleOutputPin(&GpioLed_red);
 	GPIO_ToggleOutputPin(&GpioLed_green);
 	GPIO_ToggleOutputPin(&GpioLed_orange);
 }
 
-void toggleLED_(int led){
+void toggleLED(int led){
 	switch (led){
 	case 0:
 		GPIO_ToggleOutputPin(&GpioLed_red);
@@ -95,17 +96,33 @@ void initLedPins(){
 }
 
 void traffic_light(){
-	toggleLED_(LED_RED);
+	turn_led_off();
+	toggleLED(LED_RED);
 	delay(5);
-	toggleLED_(LED_ORA);
+	toggleLED(LED_ORA);
 	delay(5);
-	toggleLED();
+	toggleLEDs();
 	delay(5);
-	toggleLED_(LED_GRE);
-	toggleLED_(LED_ORA);
+	toggleLED(LED_GRE);
+	toggleLED(LED_ORA);
 	delay(5);
-	toggleLED_(LED_ORA);
+	toggleLED(LED_ORA);
 
+}
+
+void turn_led_off(){
+	GPIO_WriteToOutputPin(&GpioLed_red, DISABLE);
+	GPIO_WriteToOutputPin(&GpioLed_green, DISABLE);
+	GPIO_WriteToOutputPin(&GpioLed_orange, DISABLE);
+}
+
+void initButton(){
+	memset(&GpioBtn,0,sizeof(GpioBtn));
+	GpioBtn.pGPIOx = GPIOD;
+	GpioBtn.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_5;
+	GpioBtn.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_IT_FT;
+	GpioBtn.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_PIN_PU;
+	GPIO_Init(&GpioBtn);
 }
 
 int main(void)
@@ -115,20 +132,10 @@ int main(void)
 	SYSCFG_PCLK_EN();
 
 	initLedPins();
-
-	memset(&GpioBtn,0,sizeof(GpioBtn));
-
-	GpioBtn.pGPIOx = GPIOD;
-	GpioBtn.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_5;
-	GpioBtn.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_IT_FT;
-	GpioBtn.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_PIN_PU;
-
-
-	GPIO_Init(&GpioBtn);
+	initButton();
 
 	//IRQ config
 	GPIO_IRQInterruptConfig(IRQ_NO_EXTI9_5, ENABLE);
-
 
 	while(1){
 		traffic_light();
@@ -136,7 +143,12 @@ int main(void)
 }
 
 void EXTI9_5_IRQHandler(void){
-	delay(5);
+	// save state
+	state = GPIO_ReadFromInputPort(GpioBtn.pGPIOx);
+	turn_led_off();
+	toggleLED(LED_RED);
+	delay(7);
+	// return state
+	GPIO_WriteToOutputPort(GpioBtn.pGPIOx, state);
 	GPIO_IRQHandling(GPIO_PIN_NO_5);
-	toggleLED();
 }

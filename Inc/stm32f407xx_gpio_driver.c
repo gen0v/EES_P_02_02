@@ -218,9 +218,9 @@ uint16_t GPIO_ReadFromInputPort(GPIO_RegDef_t *pGPIOx)
 void GPIO_WriteToOutputPin(GPIO_Handle_t *pGPIO_Handle, uint8_t Value)
 {
 	if(Value == 1)
-		pGPIO_Handle->pGPIOx->OUTPUT_DATA_REG |= (Value<<pGPIO_Handle->GPIO_PinConfig.GPIO_PinNumber);
+		pGPIO_Handle->pGPIOx->OUTPUT_DATA_REG |= (ENABLE<<pGPIO_Handle->GPIO_PinConfig.GPIO_PinNumber);
 	else
-		pGPIO_Handle->pGPIOx->OUTPUT_DATA_REG &= ~(Value<<pGPIO_Handle->GPIO_PinConfig.GPIO_PinNumber);
+		pGPIO_Handle->pGPIOx->OUTPUT_DATA_REG &= (DISABLE<<pGPIO_Handle->GPIO_PinConfig.GPIO_PinNumber);
 }
 
 // Implementieren Sie die Funktionalität
